@@ -1,0 +1,55 @@
+
+#!/bin/bash
+
+#set -euxo pipefail
+
+QUALITY="480"
+URL=""
+
+while [ "$1" != "" ]; do
+	case "$1" in
+		-u)
+			shift
+			URL="$1"
+			;;
+		-q)
+			shift
+			QUALITY="$1"
+			;;
+		-h)
+			echo "Usage: rvv [-q quality] -u URL."
+			echo "Quality can be: 144, 240, 360, 480, 720 and 1080."
+			echo "URL is that of the post itself."
+			;;
+		*)
+			;;
+	esac
+	shift
+done
+
+if [ "$URL" = "" ]; then
+	echo "No URL specified. Aborting."
+	exit 1
+fi
+
+POSTJSON="${URL}.json"
+#mkdir /tmp/reddit-video
+curl -s -A "Firefox" ${POSTJSON} -o /tmp/reddit-video/post.json
+
+VIDEOURL=`jq .[0].data.children[0].data.secure_media.reddit_video.fallback_url /tmp/reddit-video/post.json | sed 's/\"//g'`
+BASEURL=`echo ${VIDEOURL} | sed 's|\(.*\)/.*|\1|'`
+
+VIDEOURL="${BASEURL}/DASH_${QUALITY}"
+AUDIOURL="${BASEURL}/audio"
+
+#DASH_1080, DASH_720, DASH_480, DASH_360, DASH_240; seems not to require ?source=fallback to work okay
+
+curl -s -A "Firefox" ${VIDEOURL} -o /tmp/reddit-video/video
+curl -s -A "Firefox" ${AUDIOURL} -o /tmp/reddit-video/audio
+
+ffmpeg -nostats -loglevel 0 -i /tmp/reddit-video/video -i /tmp/reddit-video/audio -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 /tmp/reddit-video/output.mp4
+
+echo "File available in /tmp/reddit-video/output.mp4"
+#if for keeping video somewhere coming soon
+
+#rm -rf /tmp/reddit-video
