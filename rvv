@@ -49,7 +49,9 @@ curl -s -A "Firefox" ${AUDIOURL} -o /tmp/reddit-video/audio
 
 ffmpeg -nostats -loglevel 0 -i /tmp/reddit-video/video -i /tmp/reddit-video/audio -c:v copy -c:a aac -map 0:v:0 -map 1:a:0 /tmp/reddit-video/output.mp4
 
-echo "File available in /tmp/reddit-video/output.mp4"
+#echo "File available in /tmp/reddit-video/output.mp4"
 #if for keeping video somewhere coming soon
 
-#rm -rf /tmp/reddit-video
+mpv /tmp/reddit-video/output.mp4
+
+rm -rf /tmp/reddit-video
