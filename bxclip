@@ -1,0 +1,8 @@
+#!/bin/bash
+
+FILETYPE=`file --mime-type $1`
+
+TMP=($FILETYPE)
+MIME=${TMP[1]}
+
+xclip -selection clipboard -t $MIME $1
